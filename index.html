@@ -82,6 +82,18 @@ input.filled{animation:flash 1.2s}
 .sheet ul{margin:0;padding-inline-start:20px}.sheet li{margin:3px 0}
 .sheet .close{width:100%;margin-top:18px;font:inherit;font-weight:600;padding:12px;border-radius:10px;border:0;background:var(--accent);color:var(--on-accent);cursor:pointer}
 #ver{display:block;margin:4px auto 0;font:inherit;font-size:12px;color:var(--muted);background:none;border:0;text-decoration:underline;cursor:pointer;padding:6px}
+header .acts{display:flex;align-items:center;gap:12px}
+#help{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font:inherit;font-weight:700;font-size:17px;cursor:pointer;padding:0}
+#tour{position:fixed;inset:0;z-index:40}
+#tourHole{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.62);outline:3px solid var(--accent);outline-offset:2px;transition:all .25s;pointer-events:none}
+#tourCard{position:fixed;left:16px;right:16px;margin:0 auto;max-width:488px;background:var(--card);color:var(--text);border-radius:16px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+#tourCard h3{margin:2px 0 6px;font-size:19px}
+#tourCard p{margin:0;font-size:16px}
+#tourStep{font-size:13px!important;color:var(--muted)}
+.tbtns{display:flex;gap:8px;margin-top:14px;align-items:center}
+.tbtns button{font:inherit;font-weight:600;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);cursor:pointer}
+.tbtns .primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);margin-inline-start:auto}
+.tbtns .skip{border:0;background:none;color:var(--muted);padding-inline:4px}
 .link{font:inherit;font-size:15px;background:none;border:0;color:var(--accent);cursor:pointer;padding:6px 0}
 #logSum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 #logSum div{background:var(--bg);border-radius:10px;padding:10px}
@@ -121,7 +133,7 @@ box-shadow:0 -4px 16px rgba(0,0,0,.12);cursor:pointer;transition:transform .2s;t
 <body>
 <header>
   <h1>שווה את המבצע?</h1>
-  <button class="link" id="reset">מבצע חדש</button>
+  <div class="acts"><button class="link" id="reset">מבצע חדש</button><button id="help" type="button" aria-label="איך זה עובד">?</button></div>
 </header>
 
 <div class="card">
@@ -144,7 +156,7 @@ box-shadow:0 -4px 16px rgba(0,0,0,.12);cursor:pointer;transition:transform .2s;t
     <span class="t">כמות במבצע</span>
     <div class="chips" id="qty"></div>
   </div>
-  <div class="row field">
+  <div class="row field" id="priceRow">
     <div id="singleWrap">
       <label class="t" for="single">מחיר יחידה רגיל</label>
       <input id="single" inputmode="decimal" placeholder="₪">
@@ -164,13 +176,13 @@ box-shadow:0 -4px 16px rgba(0,0,0,.12);cursor:pointer;transition:transform .2s;t
   <label class="tg"><input type="checkbox" id="club"> רק לחברי מועדון / באפליקציה</label>
 </div>
 
-<div class="card">
+<div class="card" id="typeCard">
   <span class="t">סוג המוצר</span>
   <div class="chips" id="types"></div>
   <div class="hint" id="typeHint"></div>
 </div>
 
-<div class="card">
+<div class="card" id="useCard">
   <div class="step">
     <div class="lbl">קצב צריכה<small>יחידות בשבוע אצלנו</small></div>
     <div class="ctl"><button data-s="rate" data-d="-1" aria-label="פחות">−</button><output id="rateOut"></output><button data-s="rate" data-d="1" aria-label="יותר">+</button></div>
@@ -224,6 +236,22 @@ box-shadow:0 -4px 16px rgba(0,0,0,.12);cursor:pointer;transition:transform .2s;t
 <button id="bar" class="hidden" aria-hidden="true"><span id="barTitle"></span><span id="barText"></span></button>
 <div id="toast" role="status"></div>
 
+<div class="sheet" id="welcome" hidden><div role="dialog" aria-modal="true">
+  <h2>ברוכים הבאים 👋</h2>
+  <p style="margin:8px 0 0">האפליקציה עוזרת להחליט בסופר אם מבצע באמת משתלם, לפי המחיר, סוג המוצר ומה שאתם באמת תספיקו להשתמש. היא עובדת גם בלי קליטה.</p>
+  <p style="margin:10px 0 0">רוצים סיור קצר, כחצי דקה?</p>
+  <button class="close" id="welcomeYes">כן, הראו לי</button>
+  <button class="link" id="welcomeNo" style="width:100%;margin-top:6px">לא תודה. אפשר תמיד לפתוח את הסיור בכפתור ? למעלה</button>
+</div></div>
+
+<div id="tour" hidden>
+  <div id="tourHole"></div>
+  <div id="tourCard" role="dialog" aria-live="polite">
+    <p id="tourStep"></p><h3 id="tourTitle"></h3><p id="tourText"></p>
+    <div class="tbtns"><button class="skip" id="tourSkip">סיום</button><button id="tourPrev">הקודם</button><button class="primary" id="tourNext">הבא</button></div>
+  </div>
+</div>
+
 <div id="crop" hidden>
   <div class="top">סמן רק את השלט, ואז "זהה"</div>
   <div id="cropArea"><div id="cropStage"><canvas id="cropCv"></canvas><div id="cropBox"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div></div>
@@ -232,9 +260,10 @@ box-shadow:0 -4px 16px rgba(0,0,0,.12);cursor:pointer;transition:transform .2s;t
 
 <script>
 // Version: major.minor.fix - major = big redesign, minor = new features, fix = bug fixes
-const APP_VERSION='2.1.0';
+const APP_VERSION='2.2.0';
 // Newest first. Every release gets an entry here; it feeds the "what's new" window.
 const CHANGELOG=[
+ {v:'2.2.0',d:'2026-10-02',items:['סיור היכרות קצר שמראה איך משתמשים באפליקציה: כפתור ? בראש המסך','בהתקנה ראשונה האפליקציה מציעה את הסיור (אפשר לוותר)']},
  {v:'2.1.0',d:'2026-10-02',items:['יומן שינויים: לחיצה על מספר הגרסה בתחתית המסך','חלון "מה חדש" שמופיע פעם אחת אחרי כל עדכון']},
  {v:'2.0.0',d:'2026-10-02',items:['סוגי מבצע: 1+1, 2+1, השני בהנחה %, השני ב-₪','מוצרים שונים מהסדרה במחירים שונים','השוואה לאריזה אחרת לפי מחיר ל-100 גרם/מ"ל','אזהרה כשהמחיר הרגיל עלה לפני המבצע','סימון השלט בתמונה לפני הזיהוי','תזכורת למבצעי מועדון / אפליקציה','יומן חיסכון עם סיכום חודשי','מספרי גרסה חדשים: גדול.פיצ\'ר.תיקון']},
  {v:'1.3.0',d:'2026-10-02',items:['צילום שלט מבצע וזיהוי טקסט על הטלפון, גם בלי אינטרנט']},
@@ -644,9 +673,69 @@ function whatsNew(){
  let seen=null;try{seen=localStorage.getItem(SEENKEY)}catch(e){}
  // people who used the app before this feature existed have saved data but no seen-version
  if(!seen&&(localStorage.getItem(KEY)||localStorage.getItem(LOGKEY)))seen='2.0.0';
- if(!seen){try{localStorage.setItem(SEENKEY,APP_VERSION)}catch(e){}return} // brand new install
+ if(!seen){try{localStorage.setItem(SEENKEY,APP_VERSION)}catch(e){}offerTour();return} // brand new install
  const fresh=CHANGELOG.filter(e=>cmpVer(e.v,seen)>0);
  if(fresh.length)showSheet('מה חדש',fresh);
+}
+
+// ---- guided tour ----
+const TOURKEY='dealcheck-tour-seen';
+const TOUR=[
+ {el:'scanBtn',title:'הדרך המהירה: צילום',text:'מצלמים את שלט המבצע, מסמנים רק את השלט, והאפליקציה ממלאת את המחירים לבד. הזיהוי רץ על הטלפון, גם בלי קליטה.'},
+ {el:'dtypes',title:'או בוחרים ידנית',text:'כמות במחיר (למשל 3 ב-20), 1+1, 2+1, או הנחה על המוצר השני.'},
+ {el:'priceRow',title:'המחירים',text:'מחיר רגיל ליחידה ומחיר המבצע. ב-1+1 ודומיו מחיר המבצע מחושב לבד. לוקחים מוצרים שונים מהסדרה? סמנו את התיבה שמתחת.'},
+ {el:'typeCard',title:'סוג המוצר',text:'קובע כמה זמן המוצר נשאר טוב. מוצר שיתקלקל לפני שתגמרו אותו הוא לא באמת חיסכון.'},
+ {el:'useCard',title:'הצריכה שלכם',text:'כמה אתם צורכים בשבוע, כמה כבר יש בבית, והאם זה בכלל היה ברשימה. מוצר שנותנים לו שם זוכר את ההגדרות לפעם הבאה.'},
+ {el:'sizeCard',open:true,title:'השוואה לאריזה אחרת',text:'לא חובה: בודק אם אריזה גדולה במחיר רגיל זולה יותר מהמבצע, לפי מחיר ל-100 גרם או מ"ל.'},
+ {el:'verdict',title:'המסקנה',text:'ירוק, צהוב או אדום, עם החיסכון האמיתי (כאן מוצגת דוגמה). בזמן ההקלדה היא מופיעה גם בפס בתחתית המסך. "קניתי" או "ויתרתי" נרשמים ביומן.'},
+ {el:'logCard',title:'יומן חיסכון',text:'כמה חסכתם החודש, וכמה לא הוצאתם על מבצעים שוויתרתם עליהם.'},
+ {el:'help',title:'תמיד אפשר לחזור',text:'הסיור זמין בכל זמן בכפתור הזה. לחיצה על מספר הגרסה בתחתית מציגה מה השתנה בכל עדכון.'}
+];
+let tourI=-1,tourDemo=false;
+function tourPlace(){
+ const step=TOUR[tourI];if(!step)return;const el=$(step.el);if(!el)return;
+ const r=el.getBoundingClientRect(),pad=6,hole=$('tourHole'),card=$('tourCard');
+ Object.assign(hole.style,{left:(r.left-pad)+'px',top:(r.top-pad)+'px',width:(r.width+pad*2)+'px',height:(r.height+pad*2)+'px'});
+ const below=r.top+r.height/2<window.innerHeight/2;
+ card.style.top=below?'auto':'calc(16px + env(safe-area-inset-top))';
+ card.style.bottom=below?'calc(16px + env(safe-area-inset-bottom))':'auto';
+}
+function tourShow(i){
+ const prev=TOUR[tourI];if(prev&&prev.open)$(prev.el).open=false;
+ tourI=i;const step=TOUR[i],el=$(step.el);
+ if(step.open)el.open=true;
+ $('tourStep').textContent=`${i+1} מתוך ${TOUR.length}`;
+ $('tourTitle').textContent=step.title;$('tourText').textContent=step.text;
+ $('tourPrev').hidden=i===0;$('tourNext').textContent=i===TOUR.length-1?'סיום':'הבא';
+ const r=el.getBoundingClientRect(),tall=r.height>window.innerHeight*0.55;
+ el.scrollIntoView({block:tall?'start':'center'});
+ requestAnimationFrame(()=>requestAnimationFrame(tourPlace));
+}
+function startTour(){
+ $('welcome').hidden=true;
+ // show a worked example so the verdict step has something to point at
+ if(!$('single').value&&!$('deal').value&&!st.mix){
+  tourDemo=true;st.dtype='nfor';st.qty=3;$('single').value='8.9';$('deal').value='15';render();
+ }
+ $('tour').hidden=false;tourShow(0);
+}
+function endTour(){
+ const step=TOUR[tourI];if(step&&step.open)$(step.el).open=false;
+ $('tour').hidden=true;tourI=-1;
+ try{localStorage.setItem(TOURKEY,'1')}catch(e){}
+ if(tourDemo){tourDemo=false;resetDeal()}else window.scrollTo({top:0,behavior:'smooth'});
+}
+$('help').addEventListener('click',startTour);
+$('tourNext').addEventListener('click',()=>tourI<TOUR.length-1?tourShow(tourI+1):endTour());
+$('tourPrev').addEventListener('click',()=>tourI>0&&tourShow(tourI-1));
+$('tourSkip').addEventListener('click',endTour);
+window.addEventListener('resize',()=>{if(tourI>=0)tourPlace()});
+window.addEventListener('scroll',()=>{if(tourI>=0)tourPlace()},{passive:true});
+$('welcomeYes').addEventListener('click',startTour);
+$('welcomeNo').addEventListener('click',()=>{$('welcome').hidden=true;try{localStorage.setItem(TOURKEY,'1')}catch(e){}});
+function offerTour(){
+ let seen=null;try{seen=localStorage.getItem(TOURKEY)}catch(e){}
+ if(!seen)$('welcome').hidden=false;
 }
 
 // ---- start ----
