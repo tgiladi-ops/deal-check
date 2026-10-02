@@ -58,6 +58,12 @@ box-shadow:0 -4px 16px rgba(0,0,0,.12);cursor:pointer;transition:transform .2s;t
 #bar.green #barTitle{color:var(--green)}#bar.yellow #barTitle{color:var(--yellow)}#bar.red #barTitle{color:var(--red)}
 #barText{font-size:15px;color:var(--muted)}
 body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+.scan{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font:inherit;font-size:17px;font-weight:600;padding:12px;border-radius:12px;border:1px dashed var(--accent);background:transparent;color:var(--accent);cursor:pointer;margin-bottom:12px}
+.scan:disabled{opacity:.6}
+#scanMsg{font-size:14px;margin:-4px 0 12px;color:var(--muted)}#scanMsg:empty{display:none}
+#scanMsg details{margin-top:4px}#scanMsg pre{white-space:pre-wrap;font-size:12px;margin:4px 0 0;max-height:140px;overflow:auto}
+input.filled{animation:flash 1.2s}
+@keyframes flash{0%{background:var(--accent);color:var(--on-accent)}100%{}}
 .link{font:inherit;font-size:15px;background:none;border:0;color:var(--accent);cursor:pointer;padding:6px 0}
 </style>
 </head>
@@ -68,6 +74,9 @@ body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 </header>
 
 <div class="card">
+  <button class="scan" id="scanBtn" type="button">📷 צלם שלט מבצע</button>
+  <input id="scanFile" type="file" accept="image/*" capture="environment" hidden>
+  <div id="scanMsg" aria-live="polite"></div>
   <div class="field">
     <label class="t" for="name">מוצר (לא חובה, שומר את ההגדרות שלו)</label>
     <input id="name" type="text" list="saved" autocomplete="off" placeholder="למשל: יוגורט, נייר טואלט">
@@ -124,7 +133,7 @@ body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 <button id="bar" class="hidden" aria-hidden="true"><span id="barTitle"></span><span id="barText"></span></button>
 
 <script>
-const APP_VERSION='4';
+const APP_VERSION='5';
 const TYPES=[
  {id:'fresh',label:'טרי קצר',hint:'ירקות, פירות, לחם טרי',weeks:1},
  {id:'fridge',label:'מקרר',hint:'חלב, יוגורט, גבינות, נקניקים',weeks:2},
@@ -137,7 +146,7 @@ const STEPS={
  weeks:[0.5,1,2,3,4,6,8,12,16,26,40,52,104],
  stock:Array.from({length:21},(_,i)=>i)
 };
-const QTYS=[2,3,4,5,6];
+let QTYS=[2,3,4,5,6];
 const KEY='dealcheck-products-v1';
 const $=id=>document.getElementById(id);
 let st={qty:2,type:'fridge',rate:1,weeks:2,stock:0,anyway:true};
@@ -203,17 +212,123 @@ document.addEventListener('click',e=>{
  else if(b.dataset.s){const arr=STEPS[b.dataset.s];let i=arr.indexOf(st[b.dataset.s]);if(i<0)i=0;
   i=Math.max(0,Math.min(arr.length-1,i+ +b.dataset.d));st[b.dataset.s]=arr[i];if(b.dataset.s!=='stock')remember()}
  else if(b.dataset.v){st.anyway=b.dataset.v==='1'}
- else if(b.id==='reset'){$('single').value='';$('deal').value='';$('name').value='';st.stock=0;st.anyway=true;$('single').focus()}
+ else if(b.id==='reset'){formula=null;$('scanMsg').textContent='';$('single').value='';$('deal').value='';$('name').value='';st.stock=0;st.anyway=true;$('single').focus()}
  else return;
  render();
 });
-['single','deal'].forEach(id=>$(id).addEventListener('input',calc));
+let formula=null; // {mult} or {add} from a scanned label, until the deal price is typed by hand
+const r2=x=>Math.round(x*100)/100;
+function applyFormula(){const v=num($('single').value);if(!formula||!v)return;
+ $('deal').value=String(r2(formula.mult!=null?v*formula.mult:v+formula.add));}
+$('single').addEventListener('input',()=>{applyFormula();calc()});
+$('deal').addEventListener('input',()=>{formula=null;calc()});
 $('name').addEventListener('change',()=>{
  const n=$('name').value.trim(),p=load()[n];
  if(p){st.type=p.type;st.rate=p.rate;st.weeks=p.weeks;render()}else remember();
 });
 $('bar').addEventListener('click',()=>$('verdict').scrollIntoView({behavior:'smooth',block:'center'}));
 if('IntersectionObserver' in window)new IntersectionObserver(es=>{cardVisible=es[0].isIntersecting;syncBar()},{threshold:0.4}).observe($('verdict'));
+// Parses OCR text of an Israeli shelf deal label.
+// heb: text from the Hebrew pass, eng: text from the digits-only pass (optional)
+// Returns {qty, deal, mult, add, single, desc}: deal price = deal, or single*mult, or single+add
+function parseLabel(heb,eng){
+ const P='(\\d{1,4}(?:\\.\\d{1,2})?)';
+ const num=s=>s==null?null:parseFloat(s);
+ const norm=s=>' '+String(s||'')
+  .replace(/[‎‏‪-‮]/g,'')
+  .replace(/[״“”]/g,'"').replace(/[׳‘’`]/g,"'")
+  .replace(/[־–—_]/g,'-')
+  .replace(/(\d),(\d{1,2})(?!\d)/g,'$1.$2')
+  .replace(/[ \t]+/g,' ')+' ';
+ // drop "price per 100g / 1 liter" so it is never taken as the unit price
+ const unitRe=new RegExp('(?:ל|מחיר ל)\\s*-?\\s*(?:100|1)\\s*(?:גר|גרם|ג\'|מ"ל|מל|ק"ג|קג|ליטר|ל\')[^\\d\\n]{0,12}'+P+'|'+P+'\\s*₪?\\s*ל\\s*-?\\s*(?:100|1)\\s*(?:גר|גרם|ג\'|מ"ל|מל|ק"ג|קג|ליטר|ל\')','g');
+ const unitVals=[];
+ const t=norm(heb).replace(unitRe,(m,a,b)=>{unitVals.push(num(a||b));return ' '});
+ const e=norm(eng);
+ let qty=null,deal=null,mult=null,add=null,desc='',m;
+ const plus=s=>{if(/(?:^|[^\d])1\s*\+\s*1(?![\d])/.test(s))return 1;if(/(?:^|[^\d])2\s*\+\s*1(?![\d])/.test(s))return 2;return 0};
+ const p1=plus(t)||plus(e);
+ if(p1===1){qty=2;mult=1;desc='1+1'}
+ else if(p1===2||/השלישי\s*(?:ב\s*-?\s*)?חינם/.test(t)){qty=3;mult=2;desc='השלישי חינם'}
+ else if((m=t.match(/השני\s*ב\s*-?\s*(?:(חצי)\s*מחיר|(\d{1,3})\s*%)/))){
+  const p=m[1]?50:+m[2];qty=2;mult=2-p/100;desc=`השני ב-${p}% הנחה`}
+ else if((m=t.match(new RegExp('השני\\s*ב\\s*-?\\s*'+P+'\\s*₪')))){qty=2;add=num(m[1]);desc=`השני ב-${m[1]} ₪`}
+ else{
+  const re=new RegExp('(?:^|[^\\d.])(\\d{1,2})\\s*(?:יח(?:ידות|\'|\\.)?|מוצרים|פריטים)?\\s*ב\\s*[-:.]?\\s*'+P,'g');
+  while((m=re.exec(t))){const q=+m[1],d=num(m[2]);if(q>=2&&q<=10&&d>0){qty=q;deal=d;desc=`${q} ב-${m[2]} ₪`;break}}
+ }
+ // regular price: labelled first, then a standalone price that fits the deal
+ let single=null;
+ m=t.match(new RegExp('(?:מחיר\\s*רגיל|מחיר\\s*ליח(?:ידה|\')?|במקום|לפני\\s*(?:ה)?מבצע|מחיר\\s*קודם)\\s*:?\\s*₪?\\s*'+P));
+ if(m)single=num(m[1]);
+ if(single==null){
+  const near=(a,b)=>Math.abs(a-b)<0.005;
+  const grab=s=>[...s.matchAll(/(?:^|[^\d.])(\d{1,3}\.\d{2})(?![\d.])/g)].map(x=>x[1]);
+  const fix=c=>c.filter(x=>!c.some(y=>y!==x&&y.length<x.length&&x.endsWith(y)&&x.startsWith('1'))); // "₪" read as a leading 1
+  const ct=fix(grab(t)).map(Number);
+  // digits pass sees per-100g prices too: keep a value only if it shows up more often than as a unit price
+  const ce=fix(grab(e)).map(Number);
+  const engOk=ce.filter((x,i,a)=>a.filter(y=>near(y,x)).length>unitVals.filter(u=>near(u,x)).length);
+  let v=[...new Set([...ct,...engOk])].filter(x=>x>0&&(deal==null||(!near(x,deal)&&x>deal/qty&&x<deal)));
+  if(v.length)single=v[0];
+ }
+ return {qty,deal,mult,add,single,desc};
+}
+
+// ---- local OCR (Tesseract, runs on the phone, works offline) ----
+let ocr=null;
+function loadScript(src){return new Promise((ok,bad)=>{const x=document.createElement('script');x.src=src;x.onload=ok;x.onerror=bad;document.head.appendChild(x)})}
+async function getOcr(){
+ if(ocr)return ocr;
+ ocr=(async()=>{
+  if(!window.Tesseract)await loadScript('vendor/tesseract.min.js');
+  const abs=x=>new URL(x,location.href).href;
+  const o={workerPath:abs('vendor/worker.min.js'),corePath:abs('vendor/'),langPath:abs('vendor/lang'),gzip:true,cacheMethod:'none',workerBlobURL:false};
+  const [heb,eng]=await Promise.all([Tesseract.createWorker('heb',1,o),Tesseract.createWorker('eng',1,o)]);
+  await heb.setParameters({tessedit_pageseg_mode:'11'});
+  await eng.setParameters({tessedit_pageseg_mode:'11',tessedit_char_whitelist:'0123456789.+%'});
+  return {heb,eng};
+ })();
+ try{return await ocr}catch(err){ocr=null;throw err}
+}
+async function toCanvas(file,maxSide){
+ const bmp=await createImageBitmap(file,{imageOrientation:'from-image'});
+ const k=Math.min(1,maxSide/Math.max(bmp.width,bmp.height));
+ const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
+ const g=c.getContext('2d');g.filter='grayscale(1) contrast(1.4)';g.drawImage(bmp,0,0,c.width,c.height);return c;
+}
+function scanMsg(html){$('scanMsg').innerHTML=html}
+const esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+$('scanBtn').addEventListener('click',()=>$('scanFile').click());
+$('scanFile').addEventListener('change',async ev=>{
+ const file=ev.target.files[0];ev.target.value='';if(!file)return;
+ const btn=$('scanBtn');btn.disabled=true;
+ try{
+  scanMsg(ocr?'מזהה טקסט...':'טוען את מנוע הזיהוי (בפעם הראשונה זה לוקח כמה שניות)...');
+  const w=await getOcr();
+  scanMsg('מזהה טקסט...');
+  const big=await toCanvas(file,1600),small=await toCanvas(file,800);
+  const h=(await w.heb.recognize(big)).data.text;
+  const e=(await w.eng.recognize(big)).data.text+'\n'+(await w.eng.recognize(small)).data.text;
+  const r=parseLabel(h,e);
+  const got=[];
+  if(r.qty){if(!QTYS.includes(r.qty))QTYS=[...QTYS,r.qty].sort((a,b)=>a-b);st.qty=r.qty}
+  if(r.single!=null){$('single').value=String(r.single);$('single').classList.add('filled');got.push('מחיר רגיל '+money(r.single))}
+  formula=null;
+  if(r.deal!=null){$('deal').value=String(r.deal);$('deal').classList.add('filled')}
+  else if(r.mult!=null||r.add!=null){formula={mult:r.mult,add:r.add};$('deal').value='';applyFormula();if($('deal').value)$('deal').classList.add('filled')}
+  setTimeout(()=>{$('single').classList.remove('filled');$('deal').classList.remove('filled')},1300);
+  render();
+  const raw=`<details><summary>הטקסט שזוהה</summary><pre>${esc(h.trim())}</pre></details>`;
+  if(!r.desc){scanMsg('לא זיהיתי סוג מבצע. נסה צילום קרוב וישר של השלט בלבד, או הקלד ידנית.'+raw)}
+  else{
+   const miss=r.single==null?' <b>חסר מחיר רגיל, הקלד אותו</b>'+(formula?' ומחיר המבצע יחושב לבד.':'.'):'';
+   scanMsg(`זוהה: <b>${esc(r.desc)}</b>${got.length?' · '+got.join(' · '):''}. בדוק שהמספרים נכונים.${miss}${raw}`);
+   if(r.single==null)$('single').focus();
+  }
+ }catch(err){scanMsg('הזיהוי נכשל. אם זו הפעם הראשונה, פתח את האפליקציה פעם אחת עם אינטרנט כדי שהמנוע יישמר בטלפון.')}
+ finally{btn.disabled=false}
+});
 $('ver').textContent='גרסה '+APP_VERSION;
 fillSaved();render();
 if('serviceWorker' in navigator){
