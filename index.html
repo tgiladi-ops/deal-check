@@ -213,7 +213,11 @@ $('name').addEventListener('change',()=>{
 $('bar').addEventListener('click',()=>$('verdict').scrollIntoView({behavior:'smooth',block:'center'}));
 if('IntersectionObserver' in window)new IntersectionObserver(es=>{cardVisible=es[0].isIntersecting;syncBar()},{threshold:0.4}).observe($('verdict'));
 fillSaved();render();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator){
+ const hadSW=!!navigator.serviceWorker.controller;let reloaded=false;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadSW&&!reloaded){reloaded=true;location.reload()}});
+ navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+}
 </script>
 </body>
 </html>
