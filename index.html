@@ -14,21 +14,28 @@
 @media (prefers-color-scheme:dark){:root{--bg:#121211;--card:#1d1d1b;--text:#ededea;--muted:#9a9a94;--line:#33332f;--accent:#2dd4bf;--on-accent:#062b27;
 --green:#4ade80;--green-bg:#123020;--yellow:#fbbf24;--yellow-bg:#3a2e0e;--red:#f87171;--red-bg:#3b1414}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
 body{margin:0 auto;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Hebrew",Arial,sans-serif;
-font-size:17px;line-height:1.4;padding:16px 16px calc(24px + env(safe-area-inset-bottom));max-width:520px}
+font-size:17px;line-height:1.4;padding:16px 16px calc(84px + env(safe-area-inset-bottom));max-width:520px}
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 h1{font-size:22px;margin:0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
 .t{display:block;font-size:14px;color:var(--muted);margin:0 0 6px}
-.field+.field{margin-top:12px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field+.field,.row+.field,.field+.row{margin-top:12px}
+.row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px}
 input{width:100%;font:inherit;font-size:22px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);text-align:right}
 input#name{font-size:18px}
+input[readonly]{background:transparent;border-style:dashed;color:var(--muted)}
 input:focus{outline:2px solid var(--accent);border-color:transparent}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{font:inherit;font-size:16px;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:999px;padding:9px 14px;cursor:pointer}
 .chip.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
-.hint{font-size:13px;color:var(--muted);margin-top:6px;min-height:18px}
+.hint{font-size:13px;color:var(--muted);margin-top:6px}
+.hint:empty{display:none}
+.tg{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:16px;cursor:pointer}
+.tg input{width:22px;height:22px;margin:0;accent-color:var(--accent);flex:none}
+#mixList{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+#mixList input{font-size:19px}
 .step{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .step+.step{margin-top:12px}
 .step .lbl{flex:1}
@@ -39,6 +46,12 @@ input:focus{outline:2px solid var(--accent);border-color:transparent}
 .seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .seg button{font:inherit;padding:10px;border:0;background:var(--bg);color:var(--text);cursor:pointer}
 .seg button.on{background:var(--accent);color:var(--on-accent);font-weight:600}
+details.card>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::after{content:"▾";color:var(--muted);transition:transform .2s}
+details.card[open]>summary::after{transform:rotate(180deg)}
+details.card>summary small{font-weight:400;color:var(--muted);font-size:14px;margin-inline-start:6px}
+details.card[open]>summary{margin-bottom:12px}
 #verdict{border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--line);background:var(--card)}
 #verdict.green{background:var(--green-bg);border-color:transparent}
 #verdict.yellow{background:var(--yellow-bg);border-color:transparent}
@@ -46,25 +59,55 @@ input:focus{outline:2px solid var(--accent);border-color:transparent}
 #vTitle{font-size:24px;font-weight:700;margin:0 0 4px}
 .green #vTitle{color:var(--green)}.yellow #vTitle{color:var(--yellow)}.red #vTitle{color:var(--red)}
 #vText{margin:0}
+#notes{margin:10px 0 0;padding:0;list-style:none;font-size:15px}
+#notes li{padding:8px 10px;border-radius:10px;background:rgba(127,127,127,.12);margin-top:6px}
+#notes:empty{display:none}
 #details{margin:10px 0 0;padding:10px 0 0;border-top:1px solid rgba(127,127,127,.25);font-size:15px;display:grid;grid-template-columns:auto auto;gap:4px 12px}
 #details:empty{display:none}
 #details dt{color:var(--muted)}#details dd{margin:0;text-align:left;font-weight:600}
+#actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+#actions button{font:inherit;font-weight:600;padding:11px;border-radius:10px;cursor:pointer;border:1px solid rgba(127,127,127,.35);background:var(--card);color:var(--text)}
+#actions button.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.scan{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font:inherit;font-size:17px;font-weight:600;padding:12px;border-radius:12px;border:1px dashed var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+.scan:disabled{opacity:.6}
+#scanMsg{font-size:14px;margin-top:10px;color:var(--muted)}#scanMsg:empty{display:none}
+#scanMsg details{margin-top:4px}#scanMsg pre{white-space:pre-wrap;font-size:12px;margin:4px 0 0;max-height:140px;overflow:auto}
+input.filled{animation:flash 1.2s}
+@keyframes flash{0%{background:var(--accent);color:var(--on-accent)}100%{}}
+.link{font:inherit;font-size:15px;background:none;border:0;color:var(--accent);cursor:pointer;padding:6px 0}
+#logSum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+#logSum div{background:var(--bg);border-radius:10px;padding:10px}
+#logSum b{display:block;font-size:20px}
+#logSum span{font-size:13px;color:var(--muted)}
+#logList{list-style:none;margin:0;padding:0;font-size:15px}
+#logList li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+#logList li small{display:block;color:var(--muted);font-size:12px}
+#logList .amt{font-weight:600;white-space:nowrap}
+#logList button{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px}
 #bar{position:fixed;inset-inline:0;bottom:0;margin:0 auto;max-width:520px;display:flex;justify-content:space-between;align-items:center;gap:10px;
 font:inherit;border:0;border-top:1px solid var(--line);background:var(--card);color:var(--text);padding:12px 16px calc(12px + env(safe-area-inset-bottom));
-box-shadow:0 -4px 16px rgba(0,0,0,.12);cursor:pointer;transition:transform .2s;text-align:right}
+box-shadow:0 -4px 16px rgba(0,0,0,.12);cursor:pointer;transition:transform .2s;text-align:right;z-index:5}
 #bar.hidden{transform:translateY(110%)}
 #bar.green{background:var(--green-bg)}#bar.yellow{background:var(--yellow-bg)}#bar.red{background:var(--red-bg)}
 #barTitle{font-weight:700;font-size:18px}
 #bar.green #barTitle{color:var(--green)}#bar.yellow #barTitle{color:var(--yellow)}#bar.red #barTitle{color:var(--red)}
 #barText{font-size:15px;color:var(--muted)}
-body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
-.scan{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font:inherit;font-size:17px;font-weight:600;padding:12px;border-radius:12px;border:1px dashed var(--accent);background:transparent;color:var(--accent);cursor:pointer;margin-bottom:12px}
-.scan:disabled{opacity:.6}
-#scanMsg{font-size:14px;margin:-4px 0 12px;color:var(--muted)}#scanMsg:empty{display:none}
-#scanMsg details{margin-top:4px}#scanMsg pre{white-space:pre-wrap;font-size:12px;margin:4px 0 0;max-height:140px;overflow:auto}
-input.filled{animation:flash 1.2s}
-@keyframes flash{0%{background:var(--accent);color:var(--on-accent)}100%{}}
-.link{font:inherit;font-size:15px;background:none;border:0;color:var(--accent);cursor:pointer;padding:6px 0}
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:15px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9}
+#toast.show{opacity:1}
+#crop{position:fixed;inset:0;background:#000;z-index:20;display:flex;flex-direction:column;color:#fff}
+#crop .top{padding:14px 16px;text-align:center;font-size:16px}
+#cropArea{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+#cropStage{position:relative;line-height:0}
+#cropCv{display:block}
+#cropBox{position:absolute;border:2px solid #2dd4bf;box-shadow:0 0 0 9999px rgba(0,0,0,.55);touch-action:none;cursor:move}
+#cropBox i{position:absolute;width:30px;height:30px;border:4px solid #2dd4bf;background:transparent}
+#cropBox i[data-h=nw]{top:-6px;left:-6px;border-right:0;border-bottom:0}
+#cropBox i[data-h=ne]{top:-6px;right:-6px;border-left:0;border-bottom:0}
+#cropBox i[data-h=sw]{bottom:-6px;left:-6px;border-right:0;border-top:0}
+#cropBox i[data-h=se]{bottom:-6px;right:-6px;border-left:0;border-top:0}
+#crop .btns{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+#crop .btns button{font:inherit;font-weight:600;padding:12px;border-radius:10px;border:1px solid #555;background:#222;color:#fff;cursor:pointer}
+#crop .btns button.primary{background:#2dd4bf;color:#062b27;border-color:#2dd4bf}
 </style>
 </head>
 <body>
@@ -77,25 +120,40 @@ input.filled{animation:flash 1.2s}
   <button class="scan" id="scanBtn" type="button">📷 צלם שלט מבצע</button>
   <input id="scanFile" type="file" accept="image/*" capture="environment" hidden>
   <div id="scanMsg" aria-live="polite"></div>
+</div>
+
+<div class="card">
   <div class="field">
-    <label class="t" for="name">מוצר (לא חובה, שומר את ההגדרות שלו)</label>
+    <label class="t" for="name">מוצר (לא חובה, שומר הגדרות והיסטוריית מחירים)</label>
     <input id="name" type="text" list="saved" autocomplete="off" placeholder="למשל: יוגורט, נייר טואלט">
     <datalist id="saved"></datalist>
   </div>
-  <div class="field row">
-    <div>
-      <label class="t" for="single">מחיר יחידה רגיל</label>
-      <input id="single" inputmode="decimal" placeholder="₪">
-    </div>
-    <div>
-      <label class="t" for="deal">מחיר המבצע</label>
-      <input id="deal" inputmode="decimal" placeholder="₪">
-    </div>
-  </div>
   <div class="field">
+    <span class="t">סוג המבצע</span>
+    <div class="chips" id="dtypes"></div>
+  </div>
+  <div class="field" id="qtyField">
     <span class="t">כמות במבצע</span>
     <div class="chips" id="qty"></div>
   </div>
+  <div class="row field">
+    <div id="singleWrap">
+      <label class="t" for="single">מחיר יחידה רגיל</label>
+      <input id="single" inputmode="decimal" placeholder="₪">
+    </div>
+    <div id="paramWrap" hidden>
+      <label class="t" for="param" id="paramLbl"></label>
+      <input id="param" inputmode="decimal">
+    </div>
+    <div id="dealWrap">
+      <label class="t" for="deal" id="dealLbl">מחיר המבצע</label>
+      <input id="deal" inputmode="decimal" placeholder="₪">
+    </div>
+  </div>
+  <label class="tg"><input type="checkbox" id="mix"> מוצרים שונים מהסדרה, במחירים שונים</label>
+  <div id="mixList" hidden></div>
+  <div class="hint" id="mixHint"></div>
+  <label class="tg"><input type="checkbox" id="club"> רק לחברי מועדון / באפליקציה</label>
 </div>
 
 <div class="card">
@@ -123,17 +181,49 @@ input.filled{animation:flash 1.2s}
   </div>
 </div>
 
+<details class="card" id="sizeCard">
+  <summary>השוואה לאריזה אחרת <small>לא חובה</small></summary>
+  <span class="t">יחידת מידה</span>
+  <div class="chips" id="units"></div>
+  <div class="field">
+    <label class="t" for="size" id="sizeLbl">גודל יחידה אחת במבצע</label>
+    <input id="size" inputmode="decimal" placeholder="למשל 150">
+  </div>
+  <div class="row field">
+    <div><label class="t" for="altSize" id="altSizeLbl">אריזה אחרת: גודל</label><input id="altSize" inputmode="decimal" placeholder="למשל 1000"></div>
+    <div><label class="t" for="altPrice">המחיר שלה</label><input id="altPrice" inputmode="decimal" placeholder="₪"></div>
+  </div>
+  <div class="hint">למשל: 3 יוגורטים של 150 גרם במבצע, מול גביע של 1 ק"ג (1000 גרם) במחיר רגיל.</div>
+</details>
+
 <section id="verdict" aria-live="polite">
   <p id="vTitle">הזן מחירים</p>
-  <p id="vText">מחיר רגיל, מחיר המבצע וכמות.</p>
+  <p id="vText">מחיר רגיל ומחיר המבצע.</p>
+  <ul id="notes"></ul>
   <dl id="details"></dl>
+  <div id="actions" hidden><button class="primary" id="bought">קניתי ✓</button><button id="skipped">ויתרתי</button></div>
 </section>
+
+<details class="card" id="logCard">
+  <summary>יומן חיסכון <small id="logHead"></small></summary>
+  <div id="logSum"></div>
+  <ul id="logList"></ul>
+  <button class="link" id="logClear" hidden>מחיקת כל היומן</button>
+</details>
 
 <p id="ver" style="text-align:center;font-size:12px;color:var(--muted);margin:4px 0 0"></p>
 <button id="bar" class="hidden" aria-hidden="true"><span id="barTitle"></span><span id="barText"></span></button>
+<div id="toast" role="status"></div>
+
+<div id="crop" hidden>
+  <div class="top">סמן רק את השלט, ואז "זהה"</div>
+  <div id="cropArea"><div id="cropStage"><canvas id="cropCv"></canvas><div id="cropBox"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div></div>
+  <div class="btns"><button class="primary" id="cropGo">זהה</button><button id="cropAll">כל התמונה</button><button id="cropCancel">ביטול</button></div>
+</div>
 
 <script>
-const APP_VERSION='5';
+// Version: major.minor.fix - major = big redesign, minor = new features, fix = bug fixes
+const APP_VERSION='2.0.0';
 const TYPES=[
  {id:'fresh',label:'טרי קצר',hint:'ירקות, פירות, לחם טרי',weeks:1},
  {id:'fridge',label:'מקרר',hint:'חלב, יוגורט, גבינות, נקניקים',weeks:2},
@@ -141,93 +231,237 @@ const TYPES=[
  {id:'dry',label:'יבש / שימורים',hint:'פסטה, אורז, קפה, שימורים',weeks:40},
  {id:'home',label:'ניקיון וטואלטיקה',hint:'כמעט לא מתקלקל, שימו לב למקום אחסון',weeks:104}
 ];
+const DTYPES=[
+ {id:'nfor',label:'כמות במחיר'},{id:'11',label:'1+1'},{id:'21',label:'2+1'},
+ {id:'pct',label:'השני בהנחה %'},{id:'add',label:'השני ב-₪'}
+];
+const UNITS=[
+ {id:'g',label:'גרם',base:100,per:'ל-100 גרם'},
+ {id:'ml',label:'מ"ל',base:100,per:'ל-100 מ"ל'},
+ {id:'u',label:'יחידות',base:1,per:'ליחידה (גליל, כביסה...)'}
+];
 const STEPS={
  rate:[0.25,0.5,1,1.5,2,3,4,5,6,7,10,14,20],
  weeks:[0.5,1,2,3,4,6,8,12,16,26,40,52,104],
  stock:Array.from({length:21},(_,i)=>i)
 };
 let QTYS=[2,3,4,5,6];
-const KEY='dealcheck-products-v1';
+const KEY='dealcheck-products-v1',LOGKEY='dealcheck-log-v1';
 const $=id=>document.getElementById(id);
-let st={qty:2,type:'fridge',rate:1,weeks:2,stock:0,anyway:true};
+const DEFAULTS={dtype:'nfor',qty:2,type:'fridge',rate:1,weeks:2,stock:0,anyway:true,mix:false,club:false,unit:'g'};
+let st={...DEFAULTS};
+let last=null; // last complete result, for the savings log
 
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
-function save(db){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
-function fillSaved(){const db=load();$('saved').innerHTML=Object.keys(db).sort().map(n=>`<option value="${n.replace(/"/g,'&quot;')}">`).join('')}
-function remember(){const n=$('name').value.trim();if(!n)return;const db=load();db[n]={type:st.type,rate:st.rate,weeks:st.weeks};save(db);fillSaved()}
+// ---- storage (per phone, never leaves it) ----
+function getJSON(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
+function setJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+const load=()=>getJSON(KEY,{}),save=db=>setJSON(KEY,db);
+const curName=()=>$('name').value.trim();
+function fillSaved(){$('saved').innerHTML=Object.keys(load()).sort().map(n=>`<option value="${esc(n)}">`).join('')}
+function remember(){const n=curName();if(!n)return;const db=load();
+ db[n]={...(db[n]||{}),type:st.type,rate:st.rate,weeks:st.weeks,unit:st.unit,size:$('size').value.trim()};save(db);fillSaved()}
+function recordPrice(){
+ const n=curName(),s=num($('single').value);if(!n||!s||st.mix)return;
+ const db=load(),p=db[n]||{type:st.type,rate:st.rate,weeks:st.weeks},h=p.hist||[],lo=h[h.length-1];
+ if(lo&&near(lo.p,s)&&Date.now()-lo.t<7*864e5)return;
+ h.push({p:s,t:Date.now()});p.hist=h.slice(-8);db[n]=p;save(db);fillSaved();
+}
+function priceWarn(s){
+ const p=load()[curName()];if(!p||!p.hist)return null;
+ const old=p.hist.filter(o=>Date.now()-o.t>12*36e5).slice(-3);if(!old.length)return null;
+ const ref=old.reduce((a,o)=>o.p<a.p?o:a);
+ if(s>ref.p*1.05)return `⚠️ המחיר הרגיל עלה מ-${money(ref.p)} (${new Date(ref.t).toLocaleDateString('he-IL')}) ל-${money(s)}. ייתכן שהמחיר הועלה לקראת המבצע.`;
+ return null;
+}
 
+// ---- helpers ----
 function num(v){v=String(v).replace(',','.').replace(/[^\d.]/g,'');const x=parseFloat(v);return isFinite(x)&&x>0?x:null}
+function num0(v){v=String(v).replace(',','.').replace(/[^\d.]/g,'');if(v==='')return null;const x=parseFloat(v);return isFinite(x)&&x>=0?x:null}
+const near=(a,b)=>Math.abs(a-b)<0.005;
+const r2=x=>Math.round(x*100)/100;
 const nf=new Intl.NumberFormat('he-IL',{maximumFractionDigits:2,minimumFractionDigits:0});
-const money=x=>nf.format(Math.round(x*100)/100)+' ₪';
+const money=x=>nf.format(r2(x))+' ₪';
 const fmtN=x=>nf.format(x);
+const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function weeksTxt(w){if(w<1)return Math.round(w*7)+' ימים';if(w>=8)return '~'+fmtN(Math.round(w/4.3))+' חודשים';return fmtN(Math.round(w*10)/10)+' שבועות'}
+const dealQty=()=>st.dtype==='nfor'?st.qty:st.dtype==='21'?3:2;
+let toastT;function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)}
 
+// ---- rendering ----
+function buildMix(){
+ const box=$('mixList');
+ if(!st.mix){box.innerHTML='';return}
+ const n=dealQty(),cur=[...box.querySelectorAll('input')].map(i=>i.value);
+ if(cur.length===n)return;
+ if(!cur.length&&num($('single').value))cur[0]=$('single').value;
+ box.innerHTML=Array.from({length:n},(_,i)=>`<div><label class="t" for="mx${i}">מוצר ${i+1}</label><input id="mx${i}" inputmode="decimal" placeholder="₪" value="${esc(cur[i]||'')}"></div>`).join('');
+}
 function render(){
+ $('dtypes').innerHTML=DTYPES.map(d=>`<button class="chip${d.id===st.dtype?' on':''}" data-dt="${d.id}">${d.label}</button>`).join('');
  $('qty').innerHTML=QTYS.map(q=>`<button class="chip${q===st.qty?' on':''}" data-q="${q}">${q}</button>`).join('');
+ $('qtyField').hidden=st.dtype!=='nfor';
+ const fixed=st.dtype==='nfor';
+ $('deal').readOnly=!fixed;
+ $('dealLbl').textContent=fixed?'מחיר המבצע':'סה"כ במבצע';
+ $('deal').placeholder=fixed?'₪':'מחושב';
+ $('paramWrap').hidden=!(st.dtype==='pct'||st.dtype==='add');
+ $('paramLbl').textContent=st.dtype==='pct'?'הנחה על השני (%)':'מחיר השני (₪)';
+ $('param').placeholder=st.dtype==='pct'?'50':'₪';
+ $('mix').checked=st.mix;$('club').checked=st.club;
+ $('singleWrap').hidden=st.mix;$('mixList').hidden=!st.mix;buildMix();
+ $('mixHint').textContent=st.mix?(fixed?'מחיר רגיל של כל מוצר שאתה לוקח.':'ההטבה חלה בדרך כלל על המוצר הזול מביניהם, וכך זה מחושב.'):'';
  $('types').innerHTML=TYPES.map(t=>`<button class="chip${t.id===st.type?' on':''}" data-t="${t.id}">${t.label}</button>`).join('');
  $('typeHint').textContent=TYPES.find(t=>t.id===st.type).hint;
  $('rateOut').textContent=fmtN(st.rate);
  $('weeksOut').textContent=fmtN(st.weeks);
  $('stockOut').textContent=st.stock;
  [...$('anyway').children].forEach(b=>b.classList.toggle('on',(b.dataset.v==='1')===st.anyway));
+ const u=UNITS.find(x=>x.id===st.unit);
+ $('units').innerHTML=UNITS.map(x=>`<button class="chip${x.id===st.unit?' on':''}" data-u="${x.id}">${x.label}</button>`).join('');
+ $('sizeLbl').textContent=`גודל יחידה אחת במבצע (${u.label})`;
+ $('altSizeLbl').textContent=`אריזה אחרת: גודל (${u.label})`;
  calc();
 }
 
 let cardVisible=false,hasResult=false;
 function syncBar(){$('bar').classList.toggle('hidden',cardVisible||!hasResult)}
-function verdict(cls,title,text,rows,short){
- const v=$('verdict');v.className=cls;$('vTitle').textContent=title;$('vText').textContent=text;
- hasResult=!!cls;const bar=$('bar');bar.className=cls;$('barTitle').textContent=title;$('barText').textContent=short||'';syncBar();
+function verdict(cls,title,text,rows,short,notes){
+ $('verdict').className=cls;$('vTitle').textContent=title;$('vText').textContent=text;
+ $('notes').innerHTML=(notes||[]).map(n=>`<li>${esc(n)}</li>`).join('');
  $('details').innerHTML=(rows||[]).map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+ $('actions').hidden=!cls;
+ hasResult=!!cls;const bar=$('bar');bar.className=cls||'';$('barTitle').textContent=title;$('barText').textContent=short||'';syncBar();
 }
+function pending(text){last=null;verdict('','הזן מחירים',text)}
 
+// ---- the calculation ----
 function calc(){
- const s=num($('single').value),d=num($('deal').value),n=st.qty;
- if(!s||!d){verdict('','הזן מחירים','מחיר רגיל, מחיר המבצע וכמות.');return}
- const regular=s*n,dealUnit=d/n,nominal=regular-d,pct=nominal/regular;
+ const n=dealQty();
+ let prices;
+ if(st.mix){
+  prices=[...$('mixList').querySelectorAll('input')].map(i=>num(i.value));
+  if(prices.length!==n||prices.some(x=>!x))return pending('מחיר רגיל לכל מוצר מהסדרה.');
+ }else{
+  const s0=num($('single').value);if(!s0)return pending('מחיר רגיל ומחיר המבצע.');
+  prices=Array(n).fill(s0);
+ }
+ const regular=prices.reduce((a,b)=>a+b,0),min=Math.min(...prices),s=regular/n;
+ let d=null,desc;
+ if(st.dtype==='nfor'){d=num($('deal').value);desc=d?`${n} ב-${money(d)}`:''}
+ else if(st.dtype==='11'){d=regular-min;desc='1+1'}
+ else if(st.dtype==='21'){d=regular-min;desc='2+1'}
+ else if(st.dtype==='pct'){const p=num($('param').value);if(p!=null)d=regular-min*Math.min(p,100)/100;desc=`השני ב-${p}% הנחה`}
+ else if(st.dtype==='add'){const a=num0($('param').value);if(a!=null)d=regular-min+a;desc=`השני ב-${money(a||0)}`}
+ if(st.dtype!=='nfor')$('deal').value=d!=null?String(r2(d)):'';
+ if(d==null)return pending(st.dtype==='nfor'?'מחיר המבצע חסר.':st.dtype==='pct'?'כמה אחוז הנחה על השני?':'כמה עולה השני?');
+
+ const dealUnit=d/n,nominal=regular-d,pct=nominal/regular;
  const cap=Math.floor(st.rate*st.weeks+1e-9)-st.stock;
  const usable=Math.max(0,Math.min(n,cap));
  const realSave=s*usable-d;
  const finish=(st.stock+n)/st.rate;
- const rows=[
-  ['מחיר ליחידה במבצע',money(dealUnit)],
-  ['חיסכון על הנייר',nominal>0?`${money(nominal)} (${Math.round(pct*100)}%)`:'אין'],
+ const rows=[];
+ if(st.mix)rows.push(['מחיר רגיל לכל הסדרה',money(regular)]);
+ rows.push(['מחיר ליחידה במבצע',money(dealUnit)],
+  ['חיסכון על הנייר',nominal>0.004?`${money(nominal)} (${Math.round(pct*100)}%)`:'אין'],
   ['תספיקו להשתמש',`${usable} מתוך ${n}`],
   ['מחיר ליחידה שתשתמשו בה',usable>0?money(d/usable):'-'],
-  ['זמן לגמור הכל',weeksTxt(finish)]
- ];
- if(d>=regular-0.005){verdict('red','זה לא מבצע',`${n} יחידות במחיר רגיל עולות ${money(regular)}, לא יותר ממחיר המבצע. קנו רק כמה שצריך.`,rows,'אין חיסכון');return}
- if(usable===0){verdict('red','לא תספיקו להשתמש',`בקצב הצריכה ועם מה שיש בבית, המוצר יתקלקל לפני שתגיעו אליו. קנו ${st.stock>0?'בפעם אחרת':'יחידה אחת'}.`,rows,`0 מתוך ${n} בזמן`);return}
- if(realSave<=0){verdict('red','יתבזבז יותר ממה שנחסך',`תספיקו ${usable} מתוך ${n}, כך שכל יחידה שבאמת תשתמשו בה תעלה ${money(d/usable)}, לא פחות ממחיר רגיל.`,rows,`${usable} מתוך ${n} בזמן`);return}
- if(!st.anyway){verdict('yellow','רק אם באמת צריך',`זה לא היה ברשימה, אז זו הוצאה של ${money(d)} ולא חיסכון של ${money(nominal)}.`,rows,`הוצאה ${money(d)}`);return}
- if(usable<n){verdict('yellow','משתלם חלקית',`תספיקו ${usable} מתוך ${n}. החיסכון האמיתי הוא ${money(realSave)} ולא ${money(nominal)}. אם אפשר להקפיא או לחלוק, זה משתפר.`,rows,`חיסכון ${money(realSave)}`);return}
- if(pct<0.08){verdict('yellow','חיסכון קטן',`חוסכים רק ${money(nominal)} (${Math.round(pct*100)}%). שווה רק אם יש מקום ואין לחץ על התקציב.`,rows,`חיסכון ${money(nominal)}`);return}
- verdict('green','משתלם',`חוסכים ${money(nominal)} (${Math.round(pct*100)}%) ותספיקו להשתמש בכל ${n} היחידות.`,rows,`חיסכון ${money(nominal)} (${Math.round(pct*100)}%)`);
+  ['זמן לגמור הכל',weeksTxt(finish)]);
+
+ let cls,title,text,short;
+ if(d>=regular-0.005){cls='red';title='זה לא מבצע';text=`${n} יחידות במחיר רגיל עולות ${money(regular)}, לא יותר ממחיר המבצע. קנו רק כמה שצריך.`;short='אין חיסכון'}
+ else if(usable===0){cls='red';title='לא תספיקו להשתמש';text=`בקצב הצריכה ועם מה שיש בבית, המוצר יתקלקל לפני שתגיעו אליו. קנו ${st.stock>0?'בפעם אחרת':'יחידה אחת'}.`;short=`0 מתוך ${n} בזמן`}
+ else if(realSave<=0){cls='red';title='יתבזבז יותר ממה שנחסך';text=`תספיקו ${usable} מתוך ${n}, כך שכל יחידה שבאמת תשתמשו בה תעלה ${money(d/usable)}, לא פחות ממחיר רגיל.`;short=`${usable} מתוך ${n} בזמן`}
+ else if(!st.anyway){cls='yellow';title='רק אם באמת צריך';text=`זה לא היה ברשימה, אז זו הוצאה של ${money(d)} ולא חיסכון של ${money(nominal)}.`;short=`הוצאה ${money(d)}`}
+ else if(usable<n){cls='yellow';title='משתלם חלקית';text=`תספיקו ${usable} מתוך ${n}. החיסכון האמיתי הוא ${money(realSave)} ולא ${money(nominal)}. אם אפשר להקפיא או לחלוק, זה משתפר.`;short=`חיסכון ${money(realSave)}`}
+ else if(pct<0.08){cls='yellow';title='חיסכון קטן';text=`חוסכים רק ${money(nominal)} (${Math.round(pct*100)}%). שווה רק אם יש מקום ואין לחץ על התקציב.`;short=`חיסכון ${money(nominal)}`}
+ else{cls='green';title='משתלם';text=`חוסכים ${money(nominal)} (${Math.round(pct*100)}%) ותספיקו להשתמש בכל ${n} היחידות.`;short=`חיסכון ${money(nominal)} (${Math.round(pct*100)}%)`}
+
+ const notes=[];
+ // size comparison against another package
+ const u=UNITS.find(x=>x.id===st.unit),size=num($('size').value),aSize=num($('altSize').value),aPrice=num($('altPrice').value);
+ if(size){
+  rows.push([`במבצע ${u.per}`,money(d/(n*size)*u.base)],[`במחיר רגיל ${u.per}`,money(s/size*u.base)]);
+  if(aSize&&aPrice){
+   const perAlt=aPrice/aSize*u.base,perEff=usable>0?d/usable/size*u.base:Infinity;
+   rows.push([`אריזה אחרת ${u.per}`,money(perAlt)]);
+   if(perAlt<perEff*0.98){
+    notes.push(`💡 האריזה האחרת זולה יותר: ${money(perAlt)} מול ${isFinite(perEff)?money(perEff):'-'} ${u.per} במבצע (לפי מה שתספיקו להשתמש). בדקו שתספיקו לגמור גם אותה.`);
+    if(cls==='green'||(cls==='yellow'&&usable===n)){cls='yellow';title='האריזה האחרת משתלמת יותר';short='אריזה אחרת זולה'}
+   }else notes.push(`✓ המבצע זול יותר מהאריזה האחרת (${money(perEff)} מול ${money(perAlt)} ${u.per}).`);
+  }
+ }
+ if(!st.mix){const w=priceWarn(s);if(w)notes.push(w)}
+ if(st.club)notes.push('🎫 זכרו להציג כרטיס מועדון / את האפליקציה בקופה.');
+
+ last={name:curName(),desc,spent:d,saved:st.anyway?Math.max(0,realSave):0};
+ verdict(cls,title,text,rows,short,notes);
 }
 
+// ---- savings log ----
+const loadLog=()=>getJSON(LOGKEY,[]),saveLog=a=>setJSON(LOGKEY,a.slice(-300));
+function logAction(action){
+ if(!last)return;
+ const a=loadLog();
+ a.push({t:Date.now(),name:last.name,desc:last.desc,action,saved:action==='bought'?r2(last.saved):0,spent:action==='bought'?r2(last.spent):0,avoided:action==='skipped'?r2(last.spent):0});
+ saveLog(a);renderLog();
+ toast(action==='bought'?(last.saved>0?`נרשם: חסכת ${money(last.saved)}`:'נרשם'):`נרשם: לא הוצאת ${money(last.spent)}`);
+ resetDeal();
+}
+function renderLog(){
+ const a=loadLog(),now=new Date();
+ const month=a.filter(e=>{const d=new Date(e.t);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()});
+ const sum=k=>month.reduce((x,e)=>x+(e[k]||0),0);
+ const nb=month.filter(e=>e.action==='bought').length,ns=month.length-nb;
+ $('logHead').textContent=month.length?`חסכת ${money(sum('saved'))} החודש`:'';
+ $('logSum').innerHTML=`<div><b>${money(sum('saved'))}</b><span>חיסכון החודש (${nb} קניות)</span></div><div><b>${money(sum('avoided'))}</b><span>לא הוצאת (${ns} ויתורים)</span></div>`;
+ $('logList').innerHTML=a.length?a.map((e,i)=>({e,i})).reverse().slice(0,20).map(({e,i})=>{
+  const d=new Date(e.t).toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
+  const amt=e.action==='bought'?(e.saved>0?'+'+money(e.saved):'קניתי'):'ויתרתי';
+  return `<li><div>${esc(e.name||'ללא שם')} · ${esc(e.desc)}<small>${d} · ${e.action==='bought'?'שולם '+money(e.spent):'חסכת הוצאה של '+money(e.avoided)}</small></div><span class="amt">${amt}</span><button data-del="${i}" aria-label="מחיקה">×</button></li>`}).join(''):'<li><div><small>עדיין אין רשומות. לחצו "קניתי" או "ויתרתי" אחרי בדיקת מבצע.</small></div></li>';
+ $('logClear').hidden=!a.length;
+}
+
+function resetDeal(){
+ ['single','deal','param','name','altPrice','altSize','size'].forEach(id=>$(id).value='');
+ const keep={type:st.type,rate:st.rate,weeks:st.weeks,unit:st.unit};
+ st={...DEFAULTS,...keep};QTYS=[2,3,4,5,6];
+ $('mixList').innerHTML='';$('scanMsg').textContent='';last=null;
+ render();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ---- events ----
 document.addEventListener('click',e=>{
- const b=e.target.closest('button');if(!b)return;
+ const b=e.target.closest('button');if(!b||b.closest('#crop'))return;
  if(b.dataset.q){st.qty=+b.dataset.q}
+ else if(b.dataset.dt){st.dtype=b.dataset.dt;if(st.dtype!=='nfor')$('deal').value='';$('param').value=''}
  else if(b.dataset.t){const t=TYPES.find(x=>x.id===b.dataset.t);st.type=t.id;st.weeks=t.weeks;remember()}
+ else if(b.dataset.u){st.unit=b.dataset.u;remember()}
  else if(b.dataset.s){const arr=STEPS[b.dataset.s];let i=arr.indexOf(st[b.dataset.s]);if(i<0)i=0;
   i=Math.max(0,Math.min(arr.length-1,i+ +b.dataset.d));st[b.dataset.s]=arr[i];if(b.dataset.s!=='stock')remember()}
  else if(b.dataset.v){st.anyway=b.dataset.v==='1'}
- else if(b.id==='reset'){formula=null;$('scanMsg').textContent='';$('single').value='';$('deal').value='';$('name').value='';st.stock=0;st.anyway=true;$('single').focus()}
+ else if(b.dataset.del!=null){const a=loadLog();a.splice(+b.dataset.del,1);saveLog(a);renderLog();return}
+ else if(b.id==='reset'){resetDeal();$('single').focus();return}
+ else if(b.id==='bought'||b.id==='skipped'){logAction(b.id);return}
+ else if(b.id==='logClear'){if(confirm('למחוק את כל היומן?')){saveLog([]);renderLog()}return}
  else return;
  render();
 });
-let formula=null; // {mult} or {add} from a scanned label, until the deal price is typed by hand
-const r2=x=>Math.round(x*100)/100;
-function applyFormula(){const v=num($('single').value);if(!formula||!v)return;
- $('deal').value=String(r2(formula.mult!=null?v*formula.mult:v+formula.add));}
-$('single').addEventListener('input',()=>{applyFormula();calc()});
-$('deal').addEventListener('input',()=>{formula=null;calc()});
+['deal','param','altSize','altPrice'].forEach(id=>$(id).addEventListener('input',calc));
+$('single').addEventListener('input',calc);
+$('single').addEventListener('change',()=>{recordPrice();calc()});
+$('size').addEventListener('input',calc);$('size').addEventListener('change',remember);
+$('mixList').addEventListener('input',calc);
+$('mix').addEventListener('change',e=>{st.mix=e.target.checked;render()});
+$('club').addEventListener('change',e=>{st.club=e.target.checked;calc()});
 $('name').addEventListener('change',()=>{
- const n=$('name').value.trim(),p=load()[n];
- if(p){st.type=p.type;st.rate=p.rate;st.weeks=p.weeks;render()}else remember();
+ const p=load()[curName()];
+ if(p){st.type=p.type||st.type;st.rate=p.rate||st.rate;st.weeks=p.weeks||st.weeks;st.unit=p.unit||st.unit;if(p.size)$('size').value=p.size;render()}
+ else{remember();recordPrice()}
 });
 $('bar').addEventListener('click',()=>$('verdict').scrollIntoView({behavior:'smooth',block:'center'}));
 if('IntersectionObserver' in window)new IntersectionObserver(es=>{cardVisible=es[0].isIntersecting;syncBar()},{threshold:0.4}).observe($('verdict'));
+
 // Parses OCR text of an Israeli shelf deal label.
 // heb: text from the Hebrew pass, eng: text from the digits-only pass (optional)
 // Returns {qty, deal, mult, add, single, desc}: deal price = deal, or single*mult, or single+add
@@ -291,46 +525,92 @@ async function getOcr(){
  })();
  try{return await ocr}catch(err){ocr=null;throw err}
 }
-async function toCanvas(file,maxSide){
- const bmp=await createImageBitmap(file,{imageOrientation:'from-image'});
- const k=Math.min(1,maxSide/Math.max(bmp.width,bmp.height));
- const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
- const g=c.getContext('2d');g.filter='grayscale(1) contrast(1.4)';g.drawImage(bmp,0,0,c.width,c.height);return c;
+function cropCanvas(bmp,r,maxSide){
+ const k=Math.min(1,maxSide/Math.max(r.w,r.h));
+ const c=document.createElement('canvas');c.width=Math.max(1,Math.round(r.w*k));c.height=Math.max(1,Math.round(r.h*k));
+ const g=c.getContext('2d');g.filter='grayscale(1) contrast(1.4)';g.drawImage(bmp,r.x,r.y,r.w,r.h,0,0,c.width,c.height);return c;
 }
-function scanMsg(html){$('scanMsg').innerHTML=html}
-const esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-$('scanBtn').addEventListener('click',()=>$('scanFile').click());
+const scanMsg=html=>{$('scanMsg').innerHTML=html};
+getOcr.warm=()=>{getOcr().catch(()=>{})};
+
+// crop screen
+let cropBmp=null,cropK=1,box=null,drag=null;
+function placeBox(){const b=$('cropBox');b.style.left=box.x+'px';b.style.top=box.y+'px';b.style.width=box.w+'px';b.style.height=box.h+'px'}
+function openCrop(bmp){
+ cropBmp=bmp;$('crop').hidden=false;
+ const area=$('cropArea'),W=area.clientWidth-24,H=area.clientHeight-24;
+ cropK=Math.min(W/bmp.width,H/bmp.height,1);
+ const cv=$('cropCv'),dpr=window.devicePixelRatio||1,w=Math.round(bmp.width*cropK),h=Math.round(bmp.height*cropK);
+ cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+'px';cv.style.height=h+'px';
+ cv.getContext('2d').drawImage(bmp,0,0,cv.width,cv.height);
+ box={x:w*.1,y:h*.25,w:w*.8,h:h*.5};placeBox();
+}
+function closeCrop(){$('crop').hidden=true;cropBmp=null}
+$('cropBox').addEventListener('pointerdown',e=>{
+ e.preventDefault();$('cropBox').setPointerCapture(e.pointerId);
+ drag={h:e.target.dataset.h||'move',x:e.clientX,y:e.clientY,b:{...box}};
+});
+$('cropBox').addEventListener('pointermove',e=>{
+ if(!drag)return;
+ const cv=$('cropCv'),W=cv.clientWidth,H=cv.clientHeight,MIN=40;
+ const dx=e.clientX-drag.x,dy=e.clientY-drag.y,o=drag.b;let {x,y,w,h}=o;
+ if(drag.h==='move'){x=Math.min(Math.max(0,o.x+dx),W-o.w);y=Math.min(Math.max(0,o.y+dy),H-o.h)}
+ else{
+  if(drag.h.includes('w')){x=Math.min(Math.max(0,o.x+dx),o.x+o.w-MIN);w=o.x+o.w-x}
+  if(drag.h.includes('e')){w=Math.min(Math.max(MIN,o.w+dx),W-o.x)}
+  if(drag.h.includes('n')){y=Math.min(Math.max(0,o.y+dy),o.y+o.h-MIN);h=o.y+o.h-y}
+  if(drag.h.includes('s')){h=Math.min(Math.max(MIN,o.h+dy),H-o.y)}
+ }
+ box={x,y,w,h};placeBox();
+});
+['pointerup','pointercancel'].forEach(ev=>$('cropBox').addEventListener(ev,()=>{drag=null}));
+$('cropCancel').addEventListener('click',closeCrop);
+$('cropAll').addEventListener('click',()=>{const b=cropBmp;closeCrop();runOcr(b,{x:0,y:0,w:b.width,h:b.height})});
+$('cropGo').addEventListener('click',()=>{const b=cropBmp,k=cropK;closeCrop();
+ runOcr(b,{x:box.x/k,y:box.y/k,w:box.w/k,h:box.h/k})});
+
+$('scanBtn').addEventListener('click',()=>{getOcr.warm();$('scanFile').click()});
 $('scanFile').addEventListener('change',async ev=>{
  const file=ev.target.files[0];ev.target.value='';if(!file)return;
+ try{openCrop(await createImageBitmap(file,{imageOrientation:'from-image'}))}
+ catch(e){scanMsg('לא הצלחתי לפתוח את התמונה. נסה שוב.')}
+});
+
+async function runOcr(bmp,rect){
  const btn=$('scanBtn');btn.disabled=true;
  try{
   scanMsg(ocr?'מזהה טקסט...':'טוען את מנוע הזיהוי (בפעם הראשונה זה לוקח כמה שניות)...');
   const w=await getOcr();
   scanMsg('מזהה טקסט...');
-  const big=await toCanvas(file,1600),small=await toCanvas(file,800);
+  const big=cropCanvas(bmp,rect,1600),small=cropCanvas(bmp,rect,800);
   const h=(await w.heb.recognize(big)).data.text;
   const e=(await w.eng.recognize(big)).data.text+'\n'+(await w.eng.recognize(small)).data.text;
-  const r=parseLabel(h,e);
-  const got=[];
-  if(r.qty){if(!QTYS.includes(r.qty))QTYS=[...QTYS,r.qty].sort((a,b)=>a-b);st.qty=r.qty}
-  if(r.single!=null){$('single').value=String(r.single);$('single').classList.add('filled');got.push('מחיר רגיל '+money(r.single))}
-  formula=null;
-  if(r.deal!=null){$('deal').value=String(r.deal);$('deal').classList.add('filled')}
-  else if(r.mult!=null||r.add!=null){formula={mult:r.mult,add:r.add};$('deal').value='';applyFormula();if($('deal').value)$('deal').classList.add('filled')}
-  setTimeout(()=>{$('single').classList.remove('filled');$('deal').classList.remove('filled')},1300);
-  render();
-  const raw=`<details><summary>הטקסט שזוהה</summary><pre>${esc(h.trim())}</pre></details>`;
-  if(!r.desc){scanMsg('לא זיהיתי סוג מבצע. נסה צילום קרוב וישר של השלט בלבד, או הקלד ידנית.'+raw)}
-  else{
-   const miss=r.single==null?' <b>חסר מחיר רגיל, הקלד אותו</b>'+(formula?' ומחיר המבצע יחושב לבד.':'.'):'';
-   scanMsg(`זוהה: <b>${esc(r.desc)}</b>${got.length?' · '+got.join(' · '):''}. בדוק שהמספרים נכונים.${miss}${raw}`);
-   if(r.single==null)$('single').focus();
-  }
+  applyLabel(parseLabel(h,e),h);
  }catch(err){scanMsg('הזיהוי נכשל. אם זו הפעם הראשונה, פתח את האפליקציה פעם אחת עם אינטרנט כדי שהמנוע יישמר בטלפון.')}
  finally{btn.disabled=false}
-});
+}
+function applyLabel(r,rawText){
+ st.mix=false;$('mixList').innerHTML='';$('param').value='';
+ const got=[];
+ if(r.desc==='1+1')st.dtype='11';
+ else if(r.desc==='השלישי חינם')st.dtype='21';
+ else if(r.mult!=null){st.dtype='pct';$('param').value=String(Math.round((2-r.mult)*100))}
+ else if(r.add!=null){st.dtype='add';$('param').value=String(r.add)}
+ else if(r.deal!=null){st.dtype='nfor';if(!QTYS.includes(r.qty))QTYS=[...QTYS,r.qty].sort((a,b)=>a-b);st.qty=r.qty;$('deal').value=String(r.deal)}
+ if(r.single!=null){$('single').value=String(r.single);got.push('מחיר רגיל '+money(r.single))}
+ ['single','deal','param'].forEach(id=>{if($(id).value){$(id).classList.add('filled');setTimeout(()=>$(id).classList.remove('filled'),1300)}});
+ render();
+ if(r.single!=null)recordPrice();
+ const raw=`<details><summary>הטקסט שזוהה</summary><pre>${esc(rawText.trim())}</pre></details>`;
+ if(!r.desc){scanMsg('לא זיהיתי סוג מבצע. נסה לסמן רק את השלט, בצילום קרוב וישר, או הקלד ידנית.'+raw);return}
+ const miss=r.single==null?' <b>חסר מחיר רגיל, הקלד אותו.</b>':'';
+ scanMsg(`זוהה: <b>${esc(r.desc)}</b>${got.length?' · '+got.join(' · '):''}. בדוק שהמספרים נכונים.${miss}${raw}`);
+ if(r.single==null)$('single').focus();
+}
+
+// ---- start ----
 $('ver').textContent='גרסה '+APP_VERSION;
-fillSaved();render();
+fillSaved();render();renderLog();
 if('serviceWorker' in navigator){
  const hadSW=!!navigator.serviceWorker.controller;let reloaded=false;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadSW&&!reloaded){reloaded=true;location.reload()}});
