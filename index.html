@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>שווה את המבצע?</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f766e">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f5f5f0;--card:#fff;--text:#1c1c1a;--muted:#6b6b66;--line:#e2e2dc;--accent:#0f766e;--on-accent:#fff;
+--green:#15803d;--green-bg:#dcfce7;--yellow:#92400e;--yellow-bg:#fef3c7;--red:#b91c1c;--red-bg:#fee2e2}
+@media (prefers-color-scheme:dark){:root{--bg:#121211;--card:#1d1d1b;--text:#ededea;--muted:#9a9a94;--line:#33332f;--accent:#2dd4bf;--on-accent:#062b27;
+--green:#4ade80;--green-bg:#123020;--yellow:#fbbf24;--yellow-bg:#3a2e0e;--red:#f87171;--red-bg:#3b1414}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0 auto;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Hebrew",Arial,sans-serif;
+font-size:17px;line-height:1.4;padding:16px 16px calc(24px + env(safe-area-inset-bottom));max-width:520px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+h1{font-size:22px;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.t{display:block;font-size:14px;color:var(--muted);margin:0 0 6px}
+.field+.field{margin-top:12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input{width:100%;font:inherit;font-size:22px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);text-align:right}
+input#name{font-size:18px}
+input:focus{outline:2px solid var(--accent);border-color:transparent}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:16px;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:999px;padding:9px 14px;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.hint{font-size:13px;color:var(--muted);margin-top:6px;min-height:18px}
+.step{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.step+.step{margin-top:12px}
+.step .lbl{flex:1}
+.step .lbl small{display:block;color:var(--muted);font-size:13px}
+.ctl{display:flex;align-items:center;gap:6px}
+.ctl button{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:24px;line-height:1;cursor:pointer}
+.ctl output{min-width:52px;text-align:center;font-size:20px;font-weight:600}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{font:inherit;padding:10px;border:0;background:var(--bg);color:var(--text);cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--on-accent);font-weight:600}
+#verdict{border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--line);background:var(--card)}
+#verdict.green{background:var(--green-bg);border-color:transparent}
+#verdict.yellow{background:var(--yellow-bg);border-color:transparent}
+#verdict.red{background:var(--red-bg);border-color:transparent}
+#vTitle{font-size:24px;font-weight:700;margin:0 0 4px}
+.green #vTitle{color:var(--green)}.yellow #vTitle{color:var(--yellow)}.red #vTitle{color:var(--red)}
+#vText{margin:0}
+#details{margin:10px 0 0;padding:10px 0 0;border-top:1px solid rgba(127,127,127,.25);font-size:15px;display:grid;grid-template-columns:auto auto;gap:4px 12px}
+#details:empty{display:none}
+#details dt{color:var(--muted)}#details dd{margin:0;text-align:left;font-weight:600}
+.link{font:inherit;font-size:15px;background:none;border:0;color:var(--accent);cursor:pointer;padding:6px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>שווה את המבצע?</h1>
+  <button class="link" id="reset">מבצע חדש</button>
+</header>
+
+<div class="card">
+  <div class="field">
+    <label class="t" for="name">מוצר (לא חובה, שומר את ההגדרות שלו)</label>
+    <input id="name" type="text" list="saved" autocomplete="off" placeholder="למשל: יוגורט, נייר טואלט">
+    <datalist id="saved"></datalist>
+  </div>
+  <div class="field row">
+    <div>
+      <label class="t" for="single">מחיר יחידה רגיל</label>
+      <input id="single" inputmode="decimal" placeholder="₪">
+    </div>
+    <div>
+      <label class="t" for="deal">מחיר המבצע</label>
+      <input id="deal" inputmode="decimal" placeholder="₪">
+    </div>
+  </div>
+  <div class="field">
+    <span class="t">כמות במבצע</span>
+    <div class="chips" id="qty"></div>
+  </div>
+</div>
+
+<section id="verdict" aria-live="polite">
+  <p id="vTitle">הזן מחירים</p>
+  <p id="vText">מחיר רגיל, מחיר המבצע וכמות.</p>
+  <dl id="details"></dl>
+</section>
+
+<div class="card">
+  <span class="t">סוג המוצר</span>
+  <div class="chips" id="types"></div>
+  <div class="hint" id="typeHint"></div>
+</div>
+
+<div class="card">
+  <div class="step">
+    <div class="lbl">קצב צריכה<small>יחידות בשבוע אצלנו</small></div>
+    <div class="ctl"><button data-s="rate" data-d="-1" aria-label="פחות">−</button><output id="rateOut"></output><button data-s="rate" data-d="1" aria-label="יותר">+</button></div>
+  </div>
+  <div class="step">
+    <div class="lbl">טוב לשימוש עוד<small>שבועות (כולל הקפאה אם תקפיאו)</small></div>
+    <div class="ctl"><button data-s="weeks" data-d="-1" aria-label="פחות">−</button><output id="weeksOut"></output><button data-s="weeks" data-d="1" aria-label="יותר">+</button></div>
+  </div>
+  <div class="step">
+    <div class="lbl">כבר יש בבית<small>יחידות פתוחות או סגורות</small></div>
+    <div class="ctl"><button data-s="stock" data-d="-1" aria-label="פחות">−</button><output id="stockOut"></output><button data-s="stock" data-d="1" aria-label="יותר">+</button></div>
+  </div>
+  <div class="field" style="margin-top:14px">
+    <span class="t">הייתי קונה את זה גם בלי המבצע?</span>
+    <div class="seg" id="anyway"><button data-v="1">כן, זה ברשימה</button><button data-v="0">לא, ראיתי מבצע</button></div>
+  </div>
+</div>
+
+<script>
+const TYPES=[
+ {id:'fresh',label:'טרי קצר',hint:'ירקות, פירות, לחם טרי',weeks:1},
+ {id:'fridge',label:'מקרר',hint:'חלב, יוגורט, גבינות, נקניקים',weeks:2},
+ {id:'freeze',label:'ניתן להקפאה',hint:'בשר, עוף, לחם לפריזר',weeks:12},
+ {id:'dry',label:'יבש / שימורים',hint:'פסטה, אורז, קפה, שימורים',weeks:40},
+ {id:'home',label:'ניקיון וטואלטיקה',hint:'כמעט לא מתקלקל, שימו לב למקום אחסון',weeks:104}
+];
+const STEPS={
+ rate:[0.25,0.5,1,1.5,2,3,4,5,6,7,10,14,20],
+ weeks:[0.5,1,2,3,4,6,8,12,16,26,40,52,104],
+ stock:Array.from({length:21},(_,i)=>i)
+};
+const QTYS=[2,3,4,5,6];
+const KEY='dealcheck-products-v1';
+const $=id=>document.getElementById(id);
+let st={qty:2,type:'fridge',rate:1,weeks:2,stock:0,anyway:true};
+
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+function save(db){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
+function fillSaved(){const db=load();$('saved').innerHTML=Object.keys(db).sort().map(n=>`<option value="${n.replace(/"/g,'&quot;')}">`).join('')}
+function remember(){const n=$('name').value.trim();if(!n)return;const db=load();db[n]={type:st.type,rate:st.rate,weeks:st.weeks};save(db);fillSaved()}
+
+function num(v){v=String(v).replace(',','.').replace(/[^\d.]/g,'');const x=parseFloat(v);return isFinite(x)&&x>0?x:null}
+const nf=new Intl.NumberFormat('he-IL',{maximumFractionDigits:2,minimumFractionDigits:0});
+const money=x=>nf.format(Math.round(x*100)/100)+' ₪';
+const fmtN=x=>nf.format(x);
+function weeksTxt(w){if(w<1)return Math.round(w*7)+' ימים';if(w>=8)return '~'+fmtN(Math.round(w/4.3))+' חודשים';return fmtN(Math.round(w*10)/10)+' שבועות'}
+
+function render(){
+ $('qty').innerHTML=QTYS.map(q=>`<button class="chip${q===st.qty?' on':''}" data-q="${q}">${q}</button>`).join('');
+ $('types').innerHTML=TYPES.map(t=>`<button class="chip${t.id===st.type?' on':''}" data-t="${t.id}">${t.label}</button>`).join('');
+ $('typeHint').textContent=TYPES.find(t=>t.id===st.type).hint;
+ $('rateOut').textContent=fmtN(st.rate);
+ $('weeksOut').textContent=fmtN(st.weeks);
+ $('stockOut').textContent=st.stock;
+ [...$('anyway').children].forEach(b=>b.classList.toggle('on',(b.dataset.v==='1')===st.anyway));
+ calc();
+}
+
+function verdict(cls,title,text,rows){
+ const v=$('verdict');v.className=cls;$('vTitle').textContent=title;$('vText').textContent=text;
+ $('details').innerHTML=(rows||[]).map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
+}
+
+function calc(){
+ const s=num($('single').value),d=num($('deal').value),n=st.qty;
+ if(!s||!d){verdict('','הזן מחירים','מחיר רגיל, מחיר המבצע וכמות.');return}
+ const regular=s*n,dealUnit=d/n,nominal=regular-d,pct=nominal/regular;
+ const cap=Math.floor(st.rate*st.weeks+1e-9)-st.stock;
+ const usable=Math.max(0,Math.min(n,cap));
+ const realSave=s*usable-d;
+ const finish=(st.stock+n)/st.rate;
+ const rows=[
+  ['מחיר ליחידה במבצע',money(dealUnit)],
+  ['חיסכון על הנייר',nominal>0?`${money(nominal)} (${Math.round(pct*100)}%)`:'אין'],
+  ['תספיקו להשתמש',`${usable} מתוך ${n}`],
+  ['מחיר ליחידה שתשתמשו בה',usable>0?money(d/usable):'-'],
+  ['זמן לגמור הכל',weeksTxt(finish)]
+ ];
+ if(d>=regular-0.005){verdict('red','זה לא מבצע',`${n} יחידות במחיר רגיל עולות ${money(regular)}, לא יותר ממחיר המבצע. קנו רק כמה שצריך.`,rows);return}
+ if(usable===0){verdict('red','לא תספיקו להשתמש',`בקצב הצריכה ועם מה שיש בבית, המוצר יתקלקל לפני שתגיעו אליו. קנו ${st.stock>0?'בפעם אחרת':'יחידה אחת'}.`,rows);return}
+ if(realSave<=0){verdict('red','יתבזבז יותר ממה שנחסך',`תספיקו ${usable} מתוך ${n}, כך שכל יחידה שבאמת תשתמשו בה תעלה ${money(d/usable)}, לא פחות ממחיר רגיל.`,rows);return}
+ if(!st.anyway){verdict('yellow','רק אם באמת צריך',`זה לא היה ברשימה, אז זו הוצאה של ${money(d)} ולא חיסכון של ${money(nominal)}.`,rows);return}
+ if(usable<n){verdict('yellow','משתלם חלקית',`תספיקו ${usable} מתוך ${n}. החיסכון האמיתי הוא ${money(realSave)} ולא ${money(nominal)}. אם אפשר להקפיא או לחלוק, זה משתפר.`,rows);return}
+ if(pct<0.08){verdict('yellow','חיסכון קטן',`חוסכים רק ${money(nominal)} (${Math.round(pct*100)}%). שווה רק אם יש מקום ואין לחץ על התקציב.`,rows);return}
+ verdict('green','משתלם',`חוסכים ${money(nominal)} (${Math.round(pct*100)}%) ותספיקו להשתמש בכל ${n} היחידות.`,rows);
+}
+
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.q){st.qty=+b.dataset.q}
+ else if(b.dataset.t){const t=TYPES.find(x=>x.id===b.dataset.t);st.type=t.id;st.weeks=t.weeks;remember()}
+ else if(b.dataset.s){const arr=STEPS[b.dataset.s];let i=arr.indexOf(st[b.dataset.s]);if(i<0)i=0;
+  i=Math.max(0,Math.min(arr.length-1,i+ +b.dataset.d));st[b.dataset.s]=arr[i];if(b.dataset.s!=='stock')remember()}
+ else if(b.dataset.v){st.anyway=b.dataset.v==='1'}
+ else if(b.id==='reset'){$('single').value='';$('deal').value='';$('name').value='';st.stock=0;st.anyway=true;$('single').focus()}
+ else return;
+ render();
+});
+['single','deal'].forEach(id=>$(id).addEventListener('input',calc));
+$('name').addEventListener('change',()=>{
+ const n=$('name').value.trim(),p=load()[n];
+ if(p){st.type=p.type;st.rate=p.rate;st.weeks=p.weeks;render()}else remember();
+});
+fillSaved();render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
