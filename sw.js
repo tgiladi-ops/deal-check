@@ -1,9 +1,10 @@
-// Bump the version after any change so phones pick up the new files
-const CACHE = 'dealcheck-v3';
+// Network first with a short timeout:
+// - with internet: always serves the newest files from the server and refreshes the offline copy
+// - with no or weak signal: falls back to the saved copy after TIMEOUT_MS
+const CACHE = 'dealcheck';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const TIMEOUT_MS = 3000;
 
-// cache:'reload' skips the browser's HTTP cache, so a new version
-// never gets filled with the previous version's files
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c =>
     c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))));
@@ -16,10 +17,24 @@ self.addEventListener('activate', e => {
     .then(() => self.clients.claim()));
 });
 
-// Cache first: opens instantly and works with no connection at all
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(r => r || fetch(e.request))
-  );
+  const req = e.request;
+  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  e.respondWith(networkFirst(req));
 });
+
+async function networkFirst(req) {
+  const cache = await caches.open(CACHE);
+  const key = req.mode === 'navigate' ? './index.html' : req;
+  const fromNet = fetch(req, { cache: 'no-store' }).then(res => {
+    if (res.ok) cache.put(key, res.clone());
+    return res;
+  });
+  const timeout = new Promise(r => setTimeout(r, TIMEOUT_MS));
+  try {
+    const res = await Promise.race([fromNet, timeout]);
+    if (res) return res;
+  } catch (_) { /* offline */ }
+  const cached = await cache.match(key, { ignoreSearch: true });
+  return cached || fromNet; // nothing saved yet: keep waiting for the network
+}

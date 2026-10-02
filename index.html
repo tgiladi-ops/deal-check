@@ -120,9 +120,11 @@ body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
   <dl id="details"></dl>
 </section>
 
+<p id="ver" style="text-align:center;font-size:12px;color:var(--muted);margin:4px 0 0"></p>
 <button id="bar" class="hidden" aria-hidden="true"><span id="barTitle"></span><span id="barText"></span></button>
 
 <script>
+const APP_VERSION='4';
 const TYPES=[
  {id:'fresh',label:'טרי קצר',hint:'ירקות, פירות, לחם טרי',weeks:1},
  {id:'fridge',label:'מקרר',hint:'חלב, יוגורט, גבינות, נקניקים',weeks:2},
@@ -212,11 +214,18 @@ $('name').addEventListener('change',()=>{
 });
 $('bar').addEventListener('click',()=>$('verdict').scrollIntoView({behavior:'smooth',block:'center'}));
 if('IntersectionObserver' in window)new IntersectionObserver(es=>{cardVisible=es[0].isIntersecting;syncBar()},{threshold:0.4}).observe($('verdict'));
+$('ver').textContent='גרסה '+APP_VERSION;
 fillSaved();render();
 if('serviceWorker' in navigator){
  const hadSW=!!navigator.serviceWorker.controller;let reloaded=false;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadSW&&!reloaded){reloaded=true;location.reload()}});
- navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+ navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{
+  r.update();
+  // Coming back to an app left open in the background: check for a new version
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&navigator.onLine)r.update().then(()=>{
+    fetch('./index.html',{cache:'no-store'}).then(x=>x.text()).then(t=>{const m=t.match(/APP_VERSION='([^']+)'/);if(m&&m[1]!==APP_VERSION)location.reload()}).catch(()=>{})
+  }).catch(()=>{})});
+ }).catch(()=>{});
 }
 </script>
 </body>
