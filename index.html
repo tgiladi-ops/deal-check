@@ -49,6 +49,15 @@ input:focus{outline:2px solid var(--accent);border-color:transparent}
 #details{margin:10px 0 0;padding:10px 0 0;border-top:1px solid rgba(127,127,127,.25);font-size:15px;display:grid;grid-template-columns:auto auto;gap:4px 12px}
 #details:empty{display:none}
 #details dt{color:var(--muted)}#details dd{margin:0;text-align:left;font-weight:600}
+#bar{position:fixed;inset-inline:0;bottom:0;margin:0 auto;max-width:520px;display:flex;justify-content:space-between;align-items:center;gap:10px;
+font:inherit;border:0;border-top:1px solid var(--line);background:var(--card);color:var(--text);padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+box-shadow:0 -4px 16px rgba(0,0,0,.12);cursor:pointer;transition:transform .2s;text-align:right}
+#bar.hidden{transform:translateY(110%)}
+#bar.green{background:var(--green-bg)}#bar.yellow{background:var(--yellow-bg)}#bar.red{background:var(--red-bg)}
+#barTitle{font-weight:700;font-size:18px}
+#bar.green #barTitle{color:var(--green)}#bar.yellow #barTitle{color:var(--yellow)}#bar.red #barTitle{color:var(--red)}
+#barText{font-size:15px;color:var(--muted)}
+body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 .link{font:inherit;font-size:15px;background:none;border:0;color:var(--accent);cursor:pointer;padding:6px 0}
 </style>
 </head>
@@ -80,12 +89,6 @@ input:focus{outline:2px solid var(--accent);border-color:transparent}
   </div>
 </div>
 
-<section id="verdict" aria-live="polite">
-  <p id="vTitle">הזן מחירים</p>
-  <p id="vText">מחיר רגיל, מחיר המבצע וכמות.</p>
-  <dl id="details"></dl>
-</section>
-
 <div class="card">
   <span class="t">סוג המוצר</span>
   <div class="chips" id="types"></div>
@@ -110,6 +113,14 @@ input:focus{outline:2px solid var(--accent);border-color:transparent}
     <div class="seg" id="anyway"><button data-v="1">כן, זה ברשימה</button><button data-v="0">לא, ראיתי מבצע</button></div>
   </div>
 </div>
+
+<section id="verdict" aria-live="polite">
+  <p id="vTitle">הזן מחירים</p>
+  <p id="vText">מחיר רגיל, מחיר המבצע וכמות.</p>
+  <dl id="details"></dl>
+</section>
+
+<button id="bar" class="hidden" aria-hidden="true"><span id="barTitle"></span><span id="barText"></span></button>
 
 <script>
 const TYPES=[
@@ -151,8 +162,11 @@ function render(){
  calc();
 }
 
-function verdict(cls,title,text,rows){
+let cardVisible=false,hasResult=false;
+function syncBar(){$('bar').classList.toggle('hidden',cardVisible||!hasResult)}
+function verdict(cls,title,text,rows,short){
  const v=$('verdict');v.className=cls;$('vTitle').textContent=title;$('vText').textContent=text;
+ hasResult=!!cls;const bar=$('bar');bar.className=cls;$('barTitle').textContent=title;$('barText').textContent=short||'';syncBar();
  $('details').innerHTML=(rows||[]).map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('');
 }
 
@@ -171,13 +185,13 @@ function calc(){
   ['מחיר ליחידה שתשתמשו בה',usable>0?money(d/usable):'-'],
   ['זמן לגמור הכל',weeksTxt(finish)]
  ];
- if(d>=regular-0.005){verdict('red','זה לא מבצע',`${n} יחידות במחיר רגיל עולות ${money(regular)}, לא יותר ממחיר המבצע. קנו רק כמה שצריך.`,rows);return}
- if(usable===0){verdict('red','לא תספיקו להשתמש',`בקצב הצריכה ועם מה שיש בבית, המוצר יתקלקל לפני שתגיעו אליו. קנו ${st.stock>0?'בפעם אחרת':'יחידה אחת'}.`,rows);return}
- if(realSave<=0){verdict('red','יתבזבז יותר ממה שנחסך',`תספיקו ${usable} מתוך ${n}, כך שכל יחידה שבאמת תשתמשו בה תעלה ${money(d/usable)}, לא פחות ממחיר רגיל.`,rows);return}
- if(!st.anyway){verdict('yellow','רק אם באמת צריך',`זה לא היה ברשימה, אז זו הוצאה של ${money(d)} ולא חיסכון של ${money(nominal)}.`,rows);return}
- if(usable<n){verdict('yellow','משתלם חלקית',`תספיקו ${usable} מתוך ${n}. החיסכון האמיתי הוא ${money(realSave)} ולא ${money(nominal)}. אם אפשר להקפיא או לחלוק, זה משתפר.`,rows);return}
- if(pct<0.08){verdict('yellow','חיסכון קטן',`חוסכים רק ${money(nominal)} (${Math.round(pct*100)}%). שווה רק אם יש מקום ואין לחץ על התקציב.`,rows);return}
- verdict('green','משתלם',`חוסכים ${money(nominal)} (${Math.round(pct*100)}%) ותספיקו להשתמש בכל ${n} היחידות.`,rows);
+ if(d>=regular-0.005){verdict('red','זה לא מבצע',`${n} יחידות במחיר רגיל עולות ${money(regular)}, לא יותר ממחיר המבצע. קנו רק כמה שצריך.`,rows,'אין חיסכון');return}
+ if(usable===0){verdict('red','לא תספיקו להשתמש',`בקצב הצריכה ועם מה שיש בבית, המוצר יתקלקל לפני שתגיעו אליו. קנו ${st.stock>0?'בפעם אחרת':'יחידה אחת'}.`,rows,`0 מתוך ${n} בזמן`);return}
+ if(realSave<=0){verdict('red','יתבזבז יותר ממה שנחסך',`תספיקו ${usable} מתוך ${n}, כך שכל יחידה שבאמת תשתמשו בה תעלה ${money(d/usable)}, לא פחות ממחיר רגיל.`,rows,`${usable} מתוך ${n} בזמן`);return}
+ if(!st.anyway){verdict('yellow','רק אם באמת צריך',`זה לא היה ברשימה, אז זו הוצאה של ${money(d)} ולא חיסכון של ${money(nominal)}.`,rows,`הוצאה ${money(d)}`);return}
+ if(usable<n){verdict('yellow','משתלם חלקית',`תספיקו ${usable} מתוך ${n}. החיסכון האמיתי הוא ${money(realSave)} ולא ${money(nominal)}. אם אפשר להקפיא או לחלוק, זה משתפר.`,rows,`חיסכון ${money(realSave)}`);return}
+ if(pct<0.08){verdict('yellow','חיסכון קטן',`חוסכים רק ${money(nominal)} (${Math.round(pct*100)}%). שווה רק אם יש מקום ואין לחץ על התקציב.`,rows,`חיסכון ${money(nominal)}`);return}
+ verdict('green','משתלם',`חוסכים ${money(nominal)} (${Math.round(pct*100)}%) ותספיקו להשתמש בכל ${n} היחידות.`,rows,`חיסכון ${money(nominal)} (${Math.round(pct*100)}%)`);
 }
 
 document.addEventListener('click',e=>{
@@ -196,6 +210,8 @@ $('name').addEventListener('change',()=>{
  const n=$('name').value.trim(),p=load()[n];
  if(p){st.type=p.type;st.rate=p.rate;st.weeks=p.weeks;render()}else remember();
 });
+$('bar').addEventListener('click',()=>$('verdict').scrollIntoView({behavior:'smooth',block:'center'}));
+if('IntersectionObserver' in window)new IntersectionObserver(es=>{cardVisible=es[0].isIntersecting;syncBar()},{threshold:0.4}).observe($('verdict'));
 fillSaved();render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>

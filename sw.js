@@ -1,5 +1,5 @@
 // Bump the version after any change so phones pick up the new files
-const CACHE = 'dealcheck-v1';
+const CACHE = 'dealcheck-v2';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
